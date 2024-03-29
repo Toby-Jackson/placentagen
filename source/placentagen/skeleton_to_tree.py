@@ -246,7 +246,8 @@ def find_inlet_auto(elems,nodes,radii,length_threshold):
     # populate the elems_at_node array listing the elements connected to each node
     num_nodes = len(nodes)
     num_elems = len(elems)
-    elems_at_node = np.zeros((num_nodes, 20), dtype=int)
+    elems_at_node = np.zeros((num_nodes, 20), dtype=int) # column 0 encodes the number of elements that connect to
+    # connect to the node with that row index, columns from 1-19 encode the elements numbers that are connected
     possible_inlets = []
     for i in range(0, num_elems):
         elems_at_node[elems[i,1],0] = elems_at_node[elems[i,1],0] + 1
@@ -372,13 +373,29 @@ def find_radius_normal_projection(SegmentationImage, elems, nodes, euclid_radii)
     euclid_radii[euclid_radii == 0] = normal_radii[euclid_radii == 0]
     euclid_radii[euclid_radii == 0]=np.min(euclid_radii[euclid_radii>0]) # so no chance of div 0
     difference = abs(normal_radii - euclid_radii)/ euclid_radii
-    cutoff = 0.33333 # distances that are larger than cutoff are not used, 1 means that the distance is the same magnitude as the euclidean distance
+    cutoff = 0.33 # distances that are larger than cutoff are not used, 1 means that the distance is the same magnitude as the euclidean distance
     normal_radii[difference > cutoff] = euclid_radii[difference > cutoff]
 
     return normal_radii
 
     
 def fix_branch_direction(first_node,elems_at_node,elems,seen_elements,branch_id,branches,old_parent_list,inlet_branch):
+    """
+    :param first_node: number of first node in branch
+    :param elems_at_node: array of n_elements (rows) by 20 columns, col zero is the number of elements that feature the
+    node in that particular row
+    :param elems: array of element number, node, node - with n_element of rows
+    :param seen_elements: array of logical mask, for all possible elements
+    :param branch_id: 1-D array of n_elements, each elements can store an integer mapping back to the branch encoding for
+    that element
+    :param branches: integer encoding the number of branches that have been found so far, and is used to encode new entries
+    in <branch_id>
+    :param old_parent_list: Not currently clear to me what this does
+    :param inlet_branch: boolean, stating whether or not the branch being looked at is the inlet branch
+    :return:
+
+    Note this function breaks if the inlet node is bifurcation
+    """
     #This routine should correct branch direction correctly in a generated tree
     maxification = np.max(elems_at_node[:,0])
     new_parents = 0
@@ -429,7 +446,7 @@ def fix_branch_direction(first_node,elems_at_node,elems,seen_elements,branch_id,
                         first_node = elems[elem][2] #New first node is the second node of the element
                         connected_elems_no = elems_at_node[first_node][0]  # number of elements connected to this one
                         #Now we check if we've reached the end of a branch (either a branch point, a termination, or we have come back in a loop around)
-                        if connected_elems_no >= 3: #Bifurcation or morefication? point
+                        if connected_elems_no >= 3: #Bifurcation or morefication? point, THIS LINE BREAK if it contains two outgoing edges and no incoming edges
                             #create just the first element in each new branch which will give a seed of parents to give back to our main code
                             branch_end_elem = elem
                             new_parents = 0
@@ -466,7 +483,12 @@ def fix_branch_direction(first_node,elems_at_node,elems,seen_elements,branch_id,
     return new_parent_list,cycle,continuing,loop_parent,branch_end_elem
     
 def fix_elem_direction(inlet_node,elems,nodes):
-
+    """
+    :param inlet_node: inlet node coordinates
+    :param elems: 2D array, element number
+    :param nodes:
+    :return:
+    """
     # populate the elems_at_node array listing the elements connected to each node
     num_nodes = len(nodes)
     num_elems = len(elems)
@@ -483,13 +505,17 @@ def fix_elem_direction(inlet_node,elems,nodes):
         j = elems_at_node[elems[i][2]][0]
         elems_at_node[elems[i][2]][j] = elems[i][0]
         
-    
+    first_node_found = False
     for i in range(0,num_nodes):
         if np.all(nodes[i,1:4]== inlet_node):
             first_node = i
             print("FOUND FIRST NODE",i)
+            first_node_found = True
             break
+    if not first_node_found:
+        exit("First node not found")
 
+    print("FIRST NODE",inlet_node)
     ############
     seen_elements = np.zeros((num_elems), dtype=bool)
     branches = 1
@@ -497,7 +523,7 @@ def fix_elem_direction(inlet_node,elems,nodes):
     old_parent_list = first_node
     loop_list = np.zeros(1,dtype=int)
     loop_list[0] = (num_elems+1)
-  
+
     branch_start = np.append(branch_start, elems_at_node[first_node,1]) #First element in branch
 
     [new_parent_list,cycle,continuing,loop_parent,branch_end_elem] = fix_branch_direction(first_node, elems_at_node, elems, seen_elements,branch_id,branches,old_parent_list,True)
