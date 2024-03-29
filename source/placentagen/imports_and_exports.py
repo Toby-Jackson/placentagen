@@ -6,7 +6,9 @@ from . import pg_utilities
 import warnings
 import skimage
 from skimage import io
-
+import networkx as nx
+from .skeleton_to_tree import fix_elem_direction
+from .analyse_tree import define_elem_lengths
 
 def export_ex_coords(data, groupname, filename, type):
     # Exports coordinates to exnode or exdata format
@@ -1020,3 +1022,66 @@ def load_image_bool(name, numImages):
 
     print('Image ' + name + ' loaded. Shape: ' + str(Image.shape))
     return Image
+
+def convert_nx_to_geom(graph: nx.Graph, coords: np.array, radii: np.array, inlet_node = 0):
+    """
+    Parameters
+    ----------
+    graph - nx graph object,
+
+    coords - np.array N-nodes by 4 array of node_number, x, y, z coordinates, this needs to be the coords array from the overarching geom structure
+    Returns
+
+    Geom {nodes': nodes, 'elems': elems, 'radii': radii, 'length': length, 'euclidean length': euclid_length,
+            'branch_id': branch_id}
+    nodes is a N-nodes by 4 array of node number, x, y, z coordinates (could also have length,
+    elems is a N-elements by 3 array of element number, node 1, node 2
+    radii is a N-nodes by 1 arrray of radii field values, # I think this should actually be n-elements! Nope, I think n-nodes
+    branch-id is a N-elements by 1 array of element values
+    -------
+
+    """
+    # check inputs
+    assert coords.shape[0] == graph.number_of_nodes(), "coords input needs to have as many rows as there are nodes in the graph structure to be converted"
+    assert coords.shape[1] == 4, "coords needs to be a np.array N-nodes by 4 array of node_number, x, y, z coordinates"
+    assert radii.shape[0] == graph.number_of_nodes(), "there needs to be a radius value for every node"
+    elem_radii = np.zeros(graph.number_of_edges())
+    for elem_index, edge in enumerate(graph.edges):
+        node1, node2 = edge
+        elem_radii[elem_index] = np.mean([radii[node] for node in [node1, node2]])
+
+    geom = {}
+    geom['nodes'] = coords
+    geom['radii'] = elem_radii
+
+    elem_numbers = np.arange(graph.number_of_edges()).reshape((graph.number_of_edges(),1))
+    elems = np.hstack((elem_numbers, np.array(graph.edges)))
+    print(coords[inlet_node], geom['nodes'][inlet_node])
+    elems, branch_id, branch_start, branch_end, cycle_bool, _ = fix_elem_direction(coords[inlet_node][1:4], elems, geom['nodes']) # coords[0] fix this to make it more clear
+    geom['branch id'] = branch_id
+    geom['elems'] = elems
+    geom['length'] = define_elem_lengths(geom['nodes'], geom['elems'])
+    geom['length'][geom['length'] == 0.0] = 1.0
+
+    branch_geom = {}
+    branch_geom['nodes'] = geom['nodes']
+
+    branch_elems = np.zeros((len(branch_start), 3), dtype=int)
+    for nb in range(0, len(branch_start)):
+        nnod1 = elems[int(branch_start[nb]), 1]
+        nnod2 = elems[int(branch_end[nb]), 2]
+        branch_elems[nb, 0] = nb
+        branch_elems[nb, 1] = nnod1
+        branch_elems[nb, 2] = nnod2
+
+    branch_geom['elems'] = branch_elems
+    branch_geom['euclidean length'] = define_elem_lengths(geom['nodes'], branch_geom['elems'])
+
+    return geom, branch_geom
+
+def geom_to_nx(geom):
+    inlet_node = geom['elems'][0][1] # retrieve first node in first element as element 1 is always the inlet element
+    graph = nx.from_edgelist(geom['elems'][:,1:3], create_using=nx.DiGraph)
+    # directed_graph = nx.bfs_tree(graph, inlet_node)
+    directed_graph = nx.DiGraph(graph)
+    return directed_graph
