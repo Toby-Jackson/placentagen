@@ -1023,7 +1023,7 @@ def load_image_bool(name, numImages):
     print('Image ' + name + ' loaded. Shape: ' + str(Image.shape))
     return Image
 
-def convert_nx_to_geom(graph: nx.Graph, coords: np.array, radii: np.array, inlet_node = 0):
+def convert_nx_to_geom(graph: nx.Graph, coords: np.array, radii: np.array = None, inlet_node = 0):
     """
     Parameters
     ----------
@@ -1044,15 +1044,17 @@ def convert_nx_to_geom(graph: nx.Graph, coords: np.array, radii: np.array, inlet
     # check inputs
     assert coords.shape[0] == graph.number_of_nodes(), "coords input needs to have as many rows as there are nodes in the graph structure to be converted"
     assert coords.shape[1] == 4, "coords needs to be a np.array N-nodes by 4 array of node_number, x, y, z coordinates"
-    assert radii.shape[0] == graph.number_of_nodes(), "there needs to be a radius value for every node"
-    elem_radii = np.zeros(graph.number_of_edges())
-    for elem_index, edge in enumerate(graph.edges):
-        node1, node2 = edge
-        elem_radii[elem_index] = np.mean([radii[node] for node in [node1, node2]])
+    if radii != None:
+        assert radii.shape[0] == graph.number_of_nodes(), "there needs to be a radius value for every node"
+        elem_radii = np.zeros(graph.number_of_edges())
+        for elem_index, edge in enumerate(graph.edges):
+            node1, node2 = edge
+            elem_radii[elem_index] = np.mean([radii[node] for node in [node1, node2]])
 
     geom = {}
     geom['nodes'] = coords
-    geom['radii'] = elem_radii
+    if radii != None:
+        geom['radii'] = elem_radii
 
     elem_numbers = np.arange(graph.number_of_edges()).reshape((graph.number_of_edges(),1))
     elems = np.hstack((elem_numbers, np.array(graph.edges)))
