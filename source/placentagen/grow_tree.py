@@ -198,8 +198,8 @@ def grow_large_tree(angle_max, angle_min, fraction, min_length, point_limit, vol
 
 
                         # Checks that branch angles are appropriate
-                        end_node_loc = mesh_check_angle(angle_min, angle_max, node_loc[elems[ne_parent][1]][1:4],
-                                                        start_node_loc, end_node_loc, ne_parent, ne + 1)
+                        #end_node_loc = mesh_check_angle(angle_min, angle_max, node_loc[elems[ne_parent][1]][1:4],
+                        #                                start_node_loc, end_node_loc, ne_parent, ne + 1)
 
                         if(check_in_ellipsoid):
                            #Check end node is in the ellipsoid
