@@ -104,8 +104,8 @@ def element_connectivity_1D(node_loc, elems):
             elems_at_node[nnod][0] = elems_at_node[nnod][0] + 1
             elems_at_node[nnod][elems_at_node[nnod][0]] = ne
             
-    elem_upstream = np.zeros((num_elems, int(np.max(elems_at_node[:,0]))), dtype=int)
-    elem_downstream = np.zeros((num_elems, int(np.max(elems_at_node[:,0]))), dtype=int)
+    elem_upstream = np.zeros((num_elems, int(np.max(elems_at_node[:,0] +1))), dtype=int)
+    elem_downstream = np.zeros((num_elems, int(np.max(elems_at_node[:,0] +1))), dtype=int)
     # assign connectivity
     for ne in range(0, num_elems):
         nnod2 = elems[ne][2]  # second node in elem
