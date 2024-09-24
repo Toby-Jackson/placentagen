@@ -878,7 +878,7 @@ def find_branch_angles(geom, orders, elem_connect, branchGeom, voxelSize, conver
     # unpackage inputs
     nodes = geom['nodes']
     elems = geom['elems']
-    elems = elems[:, 1:3]  # get rid of useless first column, first column encodes the element numbers of each element geom
+    elems = elems[:, 1:3]  # get rid of first column encodes which the element numbers of each element geom
     radii = geom['radii']
     lengths = geom['length']
 
