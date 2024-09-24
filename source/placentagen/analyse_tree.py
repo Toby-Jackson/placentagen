@@ -243,7 +243,7 @@ def branch_properties(geom,branch_geom):
     branch_geom['length ratio'] = -1.*np.ones(num_branch)#length_ratio
     branch_geom['angles'] = -1.*np.ones(num_branch)# seg_angles * 180 / np.pi
     branch_geom['inlet radius'] = 0.
-    my_elems = geom['elems'][:,0]
+    my_elems = geom['elems'][:,0] # extract element numbers
     for nb in range(0,num_branch):
        tmp_elems = my_elems[geom['branch id']==nb+1]
        branch_geom['length'][nb] = np.sum(geom['length'][tmp_elems])
@@ -878,7 +878,7 @@ def find_branch_angles(geom, orders, elem_connect, branchGeom, voxelSize, conver
     # unpackage inputs
     nodes = geom['nodes']
     elems = geom['elems']
-    elems = elems[:, 1:3]  # get rid of useless first column
+    elems = elems[:, 1:3]  # get rid of first column encodes which the element numbers of each element geom
     radii = geom['radii']
     lengths = geom['length']
 
@@ -1358,7 +1358,7 @@ def major_minor(geom, elem_down):
             d_min=100000
             d_max=0
             for j in range(1, numDown+1): #look throigh children and find widest & thinnest one
-                child=np.int(elem_down[i, j])
+                child=int(elem_down[i, j])
                 d_child=radii[child]
 
                 if d_child>=d_max:
