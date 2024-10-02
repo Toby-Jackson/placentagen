@@ -444,6 +444,7 @@ def grow_chorionic_surface(angle_max, angle_min, fraction, min_length, point_lim
 
     for i in range(0, est_generation + 1):
         total_estimated = total_estimated + 2 ** i
+    total_estimated=total_estimated*2#to be safe
     # Define the total number of nodes and elements prior to growing, plus the new number expected
     num_elems_old = len(initial_geom["elems"])
     num_nodes_old = len(initial_geom["nodes"])
@@ -1292,6 +1293,7 @@ def umbilical_seed_geometry(volume, thickness, ellipticity, insertion_x, inserti
     com3 = mesh_com(3, ld, datapoints)
     com4 = mesh_com(4, ld, datapoints)
 
+
     ##CREATE NEW NODES ON CHORION SURFACE HALF WAY TO GROUP COM
 
     node_loc = np.append(node_loc, np.zeros((4, 4)), axis=0)
@@ -1299,7 +1301,11 @@ def umbilical_seed_geometry(volume, thickness, ellipticity, insertion_x, inserti
     elem_upstream = np.append(elem_upstream, np.zeros((4, 3)), axis=0)
     elem_downstream = np.append(elem_downstream, np.zeros((4, 3)), axis=0)
     node_loc[6][0] = 6
-    node_loc[6][1:4] = com1 / 2.0
+    start_node_loc = node_loc[5][1:4]
+    length_new =  np.linalg.norm(0.5 * (com1 - start_node_loc))
+    end_node_loc = start_node_loc + length_new * (com1 - start_node_loc) / np.linalg.norm(
+        (com1 - start_node_loc))
+    node_loc[6][1:4] = end_node_loc
     node_loc[6][3] = pg_utilities.z_from_xy(node_loc[6][1], node_loc[6][2], x_radius, y_radius, z_radius)
 
     elems[7, :] = [7, 5, 6]
@@ -1308,7 +1314,11 @@ def umbilical_seed_geometry(volume, thickness, ellipticity, insertion_x, inserti
     elem_downstream[7][0] = 0
 
     node_loc[7][0] = 7
-    node_loc[7][1:4] = com2 / 2.0
+    start_node_loc = node_loc[4][1:4]
+    length_new =  np.linalg.norm(0.5 * (com2 - start_node_loc))
+    end_node_loc = start_node_loc + length_new * (com2 - start_node_loc) / np.linalg.norm(
+        (com2 - start_node_loc))
+    node_loc[7][1:4] = end_node_loc
     node_loc[7][3] = pg_utilities.z_from_xy(node_loc[7][1], node_loc[7][2], x_radius, y_radius, z_radius)
 
     elems[5, :] = [5, 4, 7]
@@ -1317,7 +1327,11 @@ def umbilical_seed_geometry(volume, thickness, ellipticity, insertion_x, inserti
     elem_downstream[5][0] = 0
 
     node_loc[8][0] = 8
-    node_loc[8][1:4] = com3 / 2.0
+    start_node_loc = node_loc[4][1:4]
+    length_new = np.linalg.norm(0.5 * (com3 - start_node_loc))
+    end_node_loc = start_node_loc + length_new * (com3 - start_node_loc) / np.linalg.norm(
+        (com3 - start_node_loc))
+    node_loc[8][1:4] = end_node_loc
     node_loc[8][3] = pg_utilities.z_from_xy(node_loc[8][1], node_loc[8][2], x_radius, y_radius, z_radius)
 
     elems[6, :] = [6, 4, 8]
@@ -1326,7 +1340,11 @@ def umbilical_seed_geometry(volume, thickness, ellipticity, insertion_x, inserti
     elem_downstream[6][0] = 0
 
     node_loc[9][0] = 9
-    node_loc[9][1:4] = com4 / 2.0
+    start_node_loc = node_loc[5][1:4]
+    length_new = np.linalg.norm(0.5 * (com4 - start_node_loc))
+    end_node_loc = start_node_loc + length_new * (com4 - start_node_loc) / np.linalg.norm(
+        (com4 - start_node_loc))
+    node_loc[9][1:4] = end_node_loc
     node_loc[9][3] = pg_utilities.z_from_xy(node_loc[9][1], node_loc[9][2], x_radius, y_radius, z_radius)
 
     elems[8, :] = [8, 5, 9]

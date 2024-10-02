@@ -1739,7 +1739,7 @@ def summary_statistics(branchGeom, major_minor_results,ordering_system):
 
     print('Total length = ' + str(np.sum(branchGeom['length'])) + ' mm')
     branch_statistics[1]=np.sum(branchGeom['length'])
-    print('Total volume of  vessels identified = ' + str(np.sum(branchVols)) + ' mm3')
+    print('Total volume of vessels identified = ' + str(np.sum(branchVols)) + ' mm3')
     branch_statistics[2] =np.sum(branchVols)
     print('Total volume of complex hull representing vessel volume = ' + str(hull.volume) + ' mm3')
     branch_statistics[3] = hull.volume
