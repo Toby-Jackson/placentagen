@@ -2,6 +2,7 @@
 import numpy as np
 from scipy.spatial import Delaunay
 from scipy import spatial as sp
+import SimpleITK as sitk
 
 from . import pg_utilities
 from . import imports_and_exports
@@ -87,10 +88,10 @@ def equispaced_data_in_ellipsoid(n, volume, thickness, ellipticity):
 
     return datapoints
     
-def equispaced_data_in_hull(n, geom):
+def equispaced_data_in_hull(n: int, geom):
 
     hull = sp.ConvexHull(geom['nodes'][:, 1:4])
-    print(hull.volume)
+    # print(hull.volume)
     #for i in range(0, len(hull.vertices)):
     xmin= np.min(geom['nodes'][hull.vertices, 1])
     xmax = np.max(geom['nodes'][hull.vertices, 1])
@@ -111,7 +112,7 @@ def equispaced_data_in_hull(n, geom):
     nd_z = int(nd_z)
 
     
-    print(xmin,xmax,ymin,ymax,zmin,zmax,cuboid_vol,total_n,data_spacing)
+    # print(xmin,xmax,ymin,ymax,zmin,zmax,cuboid_vol,total_n,data_spacing)
     # Set up edge node coordinates
     x_coord = np.linspace(xmin, xmax, nd_x)
     y_coord = np.linspace(ymin,ymax, nd_y)
@@ -123,10 +124,10 @@ def equispaced_data_in_hull(n, geom):
     # Store nodes that lie within hull
     num_data = 0  # zero the total number of data points
     datapoints = np.zeros((nd_x * nd_y * nd_z, 3))
-    print((hull.vertices))
+    # print((hull.vertices))
     hull2=sp.Delaunay(geom['nodes'][hull.vertices,1:4])
     for i in range(len(data_coords)):  # Loop through grid
-        print(hull2.find_simplex(data_coords[i]))
+        # print(hull2.find_simplex(data_coords[i]))
         if hull2.find_simplex(data_coords[i]) > 0:
             coord_check = True
         else:
@@ -139,8 +140,37 @@ def equispaced_data_in_hull(n, geom):
     print('Data points within hull allocated. Total = ' + str(len(datapoints)))
 
     return datapoints
-    
 
+
+def distributed_data_in_hull(n, geom, distribution_image: sitk.Image):
+
+    p_field = np.array([2,2])
+    field_modifier = 1
+    iter_ind = 1
+    while np.any(p_field > 1):
+        print(f"Iterating over probability field for iteration: {iter_ind}, max value in field: {p_field.max()}")
+        # create evaluation points
+        eval_points = equispaced_data_in_hull(int(n*field_modifier), geom)
+        p_field = np.zeros(eval_points.shape[0])
+
+        for enum, point in enumerate(eval_points):
+            ind = distribution_image.TransformPhysicalPointToIndex(point[::-1])
+            p_field[enum] = distribution_image[ind]
+
+        p_field = p_field/p_field.max()
+        p_field = p_field * (n/p_field.sum())
+        field_modifier += 1.0
+        iter_ind += 1
+
+    print(f'Expected points: {int(p_field.sum())} compared to prescribed points: {n}, using: {eval_points.shape[0]} '
+          f'evaluation points')
+
+    #Evaluate field
+    p = p_field/p_field.max()
+    r = np.random.random(p_field.shape)
+    datapoints = np.where(p > r)
+    datapoints = eval_points[datapoints]
+    return datapoints
 
 def uniform_data_on_ellipsoid(n, volume, thickness, ellipticity, random_seed):
     """
