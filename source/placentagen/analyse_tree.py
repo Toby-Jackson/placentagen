@@ -1358,7 +1358,7 @@ def major_minor(geom, elem_down):
             d_min=100000
             d_max=0
             for j in range(1, numDown+1): #look throigh children and find widest & thinnest one
-                child=np.int(elem_down[i, j])
+                child=int(elem_down[i, j])
                 d_child=radii[child]
 
                 if d_child>=d_max:
@@ -1739,7 +1739,7 @@ def summary_statistics(branchGeom, major_minor_results,ordering_system):
 
     print('Total length = ' + str(np.sum(branchGeom['length'])) + ' mm')
     branch_statistics[1]=np.sum(branchGeom['length'])
-    print('Total volume of  vessels identified = ' + str(np.sum(branchVols)) + ' mm3')
+    print('Total volume of vessels identified = ' + str(np.sum(branchVols)) + ' mm3')
     branch_statistics[2] =np.sum(branchVols)
     print('Total volume of complex hull representing vessel volume = ' + str(hull.volume) + ' mm3')
     branch_statistics[3] = hull.volume
