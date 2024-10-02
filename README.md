@@ -21,9 +21,10 @@ Once installed the libraries can called from python
 ```
 
 ### Expected output
-To run tests
+To run tests, navigate to the placentagen directory and run pytest
 ```
-    python setup.py test
+    cd /path/to/placentagen
+    pytest
 ```
 
 ## Quality control

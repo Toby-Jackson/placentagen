@@ -281,7 +281,7 @@ def gen_ellip_mesh_tet(volume, thickness, ellipticity, n):
             count = count + 1
     ellipsoid_node.resize(count, 3,refcheck=False)
     xyList = ellipsoid_node[:, [0, 1]]
-    xyListUnique = np.vstack({tuple(row) for row in xyList})
+    xyListUnique = np.vstack([tuple(row) for row in xyList])
     # looking for z_coordinate of surface nodes
     for xyColumn in xyListUnique:
 

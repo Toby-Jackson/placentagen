@@ -15,7 +15,7 @@ setup(
     license=license,
     author='Alys Clark',
     author_email='alys.clark@auckland.ac.nz',
-    test_suite='nose.collector',
-    tests_require=['nose'],
+    test_suite='tests',
+    tests_require=['pytest'],
     description=''
 )

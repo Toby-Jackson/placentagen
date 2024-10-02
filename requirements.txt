@@ -1,7 +1,7 @@
-nose
 coverage
 scipy
 numpy
 scikit-image
 networkx
 matplotlib
+pytest
