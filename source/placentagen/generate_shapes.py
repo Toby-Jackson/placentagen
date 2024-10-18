@@ -2,6 +2,7 @@
 import numpy as np
 from scipy.spatial import Delaunay
 from scipy import spatial as sp
+import SimpleITK as sitk
 
 from . import pg_utilities
 from . import imports_and_exports
@@ -43,6 +44,7 @@ def distributed_data_in_hull(n, geom, distribution_image: sitk.Image):
     r = np.random.random(p_field.shape)
     datapoints = np.where(p > r)
     datapoints = eval_points[datapoints]
+
     return datapoints
 
 def equispaced_data_in_cuboid(n, x_dim, y_dim, z_dim):
@@ -171,7 +173,6 @@ def equispaced_data_in_ellipsoid(n, volume, thickness, ellipticity):
 def equispaced_data_in_hull(n, geom):
 
     hull = sp.ConvexHull(geom['nodes'][:, 1:4])
-    print(hull.volume)
     #for i in range(0, len(hull.vertices)):
     xmin= np.min(geom['nodes'][hull.vertices, 1])
     xmax = np.max(geom['nodes'][hull.vertices, 1])
@@ -191,8 +192,6 @@ def equispaced_data_in_hull(n, geom):
     nd_y = int(nd_y)
     nd_z = int(nd_z)
 
-
-    print(xmin,xmax,ymin,ymax,zmin,zmax,cuboid_vol,total_n,data_spacing)
     # Set up edge node coordinates
     x_coord = np.linspace(xmin, xmax, nd_x)
     y_coord = np.linspace(ymin,ymax, nd_y)
@@ -204,10 +203,8 @@ def equispaced_data_in_hull(n, geom):
     # Store nodes that lie within hull
     num_data = 0  # zero the total number of data points
     datapoints = np.zeros((nd_x * nd_y * nd_z, 3))
-    print((hull.vertices))
     hull2=sp.Delaunay(geom['nodes'][hull.vertices,1:4])
     for i in range(len(data_coords)):  # Loop through grid
-        print(hull2.find_simplex(data_coords[i]))
         if hull2.find_simplex(data_coords[i]) > 0:
             coord_check = True
         else:
