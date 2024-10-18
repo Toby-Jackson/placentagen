@@ -679,6 +679,53 @@ def ellipse_volume_to_grid(rectangular_mesh, volume, thickness, ellipticity, num
 
     return {'pl_vol_in_grid': pl_vol_in_grid, 'non_empty_rects': non_empty_loc}
 
+def define_branch_from_geom(geom):
+    """ Defines branches within a diverging arterial tree geometety
+
+    Inputs are:
+    - geom: Dictionary structur that at a minimum defines nodes and elements of the tree
+
+
+    Return:
+    - branch_geom: A dictionary structire defining the reduced branch geomrtry
+
+    A way you might want to use me is:
+    """
+
+    try:
+        value = geom['elems']
+    except KeyError:
+        print('To convert geometry into branching structure need to have a minimum of nodes and elements defined')
+        return
+
+    try:
+        value = geom['length']
+    except KeyError:
+        geom['length'] = define_elem_lengths(geom['nodes'], geom['elems'])
+
+    elems, branch_id, branch_start, branch_end, cycles, seen = skeleton_to_tree.fix_elem_direction(geom['nodes'][0, 1:4],
+                                                                                     geom['elems'],
+                                                                                     geom['nodes'])
+    geom['elems'] = elems
+
+    geom['branch id'] = branch_id
+
+    branch_geom = {}
+    branch_geom['elems'] = np.zeros((len(branch_start), 3), dtype=int)
+    for nb in range(0, len(branch_start)):
+        nnod1 = elems[int(branch_start[nb]), 1]
+        nnod2 = elems[int(branch_end[nb]), 2]
+        branch_geom['elems'][nb, 0] = nb
+        branch_geom['elems'][nb, 1] = nnod1
+        branch_geom['elems'][nb, 2] = nnod2
+
+    branch_geom['nodes'] = geom['nodes']
+    branch_geom['euclidean length'] = define_elem_lengths(geom['nodes'], branch_geom['elems'])
+    branch_geom['branch start'] = branch_start
+    branch_geom['branch end']=branch_end
+
+    return branch_geom
+
 def evaluate_orders(node_loc, elems):
     """Calculates generations, Horsfield orders, Strahler orders for a given tree
        Works for diverging trees only, but accounts for more than three elements joining at a node
