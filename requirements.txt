@@ -5,3 +5,4 @@ scikit-image
 networkx
 matplotlib
 pytest
+simpleitk
