@@ -1,5 +1,5 @@
 import numpy as np
-def no_resistance_model(Q_m, Q_f, C_ma, C_fa, N_co, N_sa):
+def no_resistance_model(Q_m, Q_f, C_ma, C_fa, N_co, N_sa, verbose=False):
     """
     Parameters
     ----------
@@ -17,21 +17,24 @@ def no_resistance_model(Q_m, Q_f, C_ma, C_fa, N_co, N_sa):
 
     """
     N_tv = N_co*N_sa
-
-    D_t = 1 # Diffusion coefficient for terminal villous tissue
-    L_tv = 1 # Length scale for TV geom, roughly exchange area divided by thickness
+    
+    D_t = 2 # Diffusion coefficient for terminal villous tissue in m^2/s
+    L_tv = 16.5*10**-6 # Length scale for TV geom, roughly exchange area divided by thickness, 15 - 18 mm
     F = lambda theta: 1 - np.e**(-1*theta)
 
     Damkohler_fetal = (D_t*L_tv*N_tv)/Q_f
     # L = ((D_t*L_tv)/Damkohler_fetal)*F(Damkohler_fetal)
     Damkohler_maternal = ((D_t*L_tv*N_tv)/Q_m) * (F(Damkohler_fetal)/Damkohler_fetal)
 
-    N_tot = (F(Damkohler_fetal)/Damkohler_fetal) * (F(Damkohler_maternal)/Damkohler_maternal) * D_t * L_tv * (C_ma - C_fa)
+    N_tot = (F(Damkohler_fetal)/Damkohler_fetal) * (F(Damkohler_maternal)/Damkohler_maternal) * D_t * L_tv * N_tv * (C_ma - C_fa)
+    if verbose:
+        print(f"{N_tot} oxygen transferred, with fetal Damkohler: {Damkohler_fetal}, maternal Damkohler: "
+              f"{Damkohler_maternal} and {N_tot} terminal villi")
     C_fv = (N_tot + Q_f*C_fa)/Q_f
     C_mv = (Q_m*C_ma - N_tot)/Q_m
     return C_fv, C_mv
 
-def resistance_model(P_m, P_f, C_ma, C_fa, N_co, N_sa, R_uta, R_utv, R_co, R_fpa, R_fpv, R_tv):
+def resistance_model(P_m, P_f, C_ma, C_fa, N_co, N_sa, R_uta, R_utv, R_co, R_fpa, R_fpv, R_tv, verbose=False):
     """
     Parameters
     ----------
@@ -59,15 +62,19 @@ def resistance_model(P_m, P_f, C_ma, C_fa, N_co, N_sa, R_uta, R_utv, R_co, R_fpa
     Q_m = P_m/(R_uta + R_co + R_utv)
     Q_f = P_f/(R_fpa + R_fpv + R_tv)
 
-    D_t = 1 # Diffusion coefficient for terminal villous tissue
-    L_tv = 1 # Length scale for TV geom, roughly exchange area divided by thickness
+    D_t = 2 # Diffusion coefficient for terminal villous tissue in m^2/s
+    L_tv = 16.5*10**-6 # Length scale for TV geom, roughly exchange area divided by thickness, 15 - 18 mm
     F = lambda theta: 1 - np.e**(-1*theta)
 
     Damkohler_fetal = (D_t*L_tv*N_tv)/Q_f
     # L = ((D_t*L_tv)/Damkohler_fetal)*F(Damkohler_fetal)
     Damkohler_maternal = ((D_t*L_tv*N_tv)/Q_m) * (F(Damkohler_fetal)/Damkohler_fetal)
 
-    N_tot = (F(Damkohler_fetal)/Damkohler_fetal) * (F(Damkohler_maternal)/Damkohler_maternal) * D_t * L_tv * (C_ma - C_fa)
+    N_tot = (F(Damkohler_fetal)/Damkohler_fetal) * (F(Damkohler_maternal)/Damkohler_maternal) * D_t * L_tv * N_tv * (C_ma - C_fa)
+    if verbose:
+        print(f"{N_tot} oxygen transferred, with fetal Damkohler: {Damkohler_fetal}, maternal Damkohler: "
+              f"{Damkohler_maternal} and {N_tot} terminal villi")
     C_fv = (N_tot + Q_f*C_fa)/Q_f
     C_mv = (Q_m*C_ma - N_tot)/Q_m
     return C_fv, C_mv
+
