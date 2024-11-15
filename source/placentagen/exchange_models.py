@@ -78,3 +78,25 @@ def resistance_model(P_m, P_f, C_ma, C_fa, N_co, N_sa, R_uta, R_utv, R_co, R_fpa
     C_mv = (Q_m*C_ma - N_tot)/Q_m
     return C_fv, C_mv
 
+def consumption(t, C):
+    """
+    :param t: time
+    :param C: Concentration of Oxygen in Fetal circulation
+    :return: dodt - rate of change in fetal oxygen conctration with respect to time
+    This function models the change in fetal oxygen concentration as a function of time using Michaelis-Menten mechanics
+    TODD: properly parameterise Max_consumption and K_m
+    """
+    Max_consumption = 0.1
+    K_m = 0.4
+    dodt = -Max_consumption/(K_m + C)
+    return dodt
+
+def oygen_consumption(C_fetal, cardiac_cyle_time):
+    """
+    :param C_fetal: Initial concentration of fetal oxygen
+    :param cardiac_cyle_time: time it takes for the fetus to complete one cardiac cycle
+    :return: two array-like objects with indexed values representing the time course of fetal oxygen concentration, the
+    first array is time, and the second is oxygen concentration
+    """
+    sol= sp.integrate.solve_ivp(consumption, [0, cardiac_cyle_time], [C_fetal,])
+    return sol.t, sol.y
