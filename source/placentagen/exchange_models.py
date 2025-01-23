@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 
-def no_resistance_model(Q_m, Q_f, C_ma, C_fa, N_co, N_sa, verbose=False):
+def exchange_maternal_fetal_oxygen_no_vessel_resistance(Q_m, Q_f, C_ma, C_fa, N_co, N_sa, verbose=False):
     """
     Parameters
     ----------
@@ -36,7 +36,7 @@ def no_resistance_model(Q_m, Q_f, C_ma, C_fa, N_co, N_sa, verbose=False):
     C_mv = (Q_m*C_ma - N_tot)/Q_m
     return C_fv, C_mv
 
-def resistance_model(P_m, P_f, C_ma, C_fa, N_co, N_sa, R_uta, R_utv, R_co, R_fpa, R_fpv, R_tv, verbose=False):
+def exchange_maternal_fetal_oxygen_with_vessel_resistance(P_m, P_f, C_ma, C_fa, N_co, N_sa, R_uta, R_utv, R_co, R_fpa, R_fpv, R_tv, verbose=False):
     """
     Parameters
     ----------
