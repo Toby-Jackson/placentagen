@@ -1,4 +1,6 @@
 import numpy as np
+import scipy as sp
+
 def no_resistance_model(Q_m, Q_f, C_ma, C_fa, N_co, N_sa, verbose=False):
     """
     Parameters
@@ -87,8 +89,11 @@ def consumption(t, C):
     TODD: properly parameterise Max_consumption and K_m
     """
     Max_consumption = 0.1
-    K_m = 0.4
-    dodt = -Max_consumption/(K_m + C)
+    K_m = 0.044#ml/ml
+    dodt = -Max_consumption*C/(K_m + C) #ml/ml/aec
+    if C<=0:
+        dodt=0.0
+
     return dodt
 
 def oygen_consumption(C_fetal, cardiac_cyle_time):
