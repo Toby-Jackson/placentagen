@@ -25,7 +25,6 @@ def exchange_maternal_fetal_oxygen_no_vessel_resistance(Q_m, Q_f, C_ma, C_fa, N_
     F = lambda theta: 1 - np.e**(-1*theta)
 
     Damkohler_fetal = (D_t*L_tv*N_tv)/Q_f
-    # L = ((D_t*L_tv)/Damkohler_fetal)*F(Damkohler_fetal)
     Damkohler_maternal = ((D_t*L_tv*N_tv)/Q_m) * (F(Damkohler_fetal)/Damkohler_fetal)
 
     N_tot = (F(Damkohler_fetal)/Damkohler_fetal) * (F(Damkohler_maternal)/Damkohler_maternal) * D_t * L_tv * N_tv * (C_ma - C_fa)
@@ -96,7 +95,7 @@ def consumption(t, C):
 
     return dodt
 
-def oygen_consumption(C_fetal, cardiac_cyle_time):
+def oxygen_consumption(C_fetal, cardiac_cyle_time):
     """
     :param C_fetal: Initial concentration of fetal oxygen
     :param cardiac_cyle_time: time it takes for the fetus to complete one cardiac cycle
