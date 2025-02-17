@@ -29,8 +29,8 @@ def exchange_maternal_fetal_oxygen_no_vessel_resistance(Q_m, Q_f, C_ma, C_fa, N_
 
     N_tot = (F(Damkohler_fetal)/Damkohler_fetal) * (F(Damkohler_maternal)/Damkohler_maternal) * D_t * L_tv * N_tv * (C_ma - C_fa)
     if verbose:
-        print(f"{N_tot} oxygen transferred, with fetal Damkohler: {Damkohler_fetal}, maternal Damkohler: "
-              f"{Damkohler_maternal} and {N_tot} terminal villi")
+        print(f"{N_tot:.3} oxygen transferred, with fetal Damkohler: {Damkohler_fetal:.4}, maternal Damkohler: "
+              f"{Damkohler_maternal:.4} and {N_tv} terminal villi")
     C_fv = (N_tot + Q_f*C_fa)/Q_f
     C_mv = (Q_m*C_ma - N_tot)/Q_m
     return C_fv, C_mv
@@ -73,8 +73,8 @@ def exchange_maternal_fetal_oxygen_with_vessel_resistance(P_m, P_f, C_ma, C_fa, 
 
     N_tot = (F(Damkohler_fetal)/Damkohler_fetal) * (F(Damkohler_maternal)/Damkohler_maternal) * D_t * L_tv * N_tv * (C_ma - C_fa)
     if verbose:
-        print(f"{N_tot} oxygen transferred, with fetal Damkohler: {Damkohler_fetal}, maternal Damkohler: "
-              f"{Damkohler_maternal} and {N_tot} terminal villi")
+        print(f"{N_tot:.3} oxygen transferred, with fetal Damkohler: {Damkohler_fetal:.4}, maternal Damkohler: "
+              f"{Damkohler_maternal} and {N_tv} terminal villi")
     C_fv = (N_tot + Q_f*C_fa)/Q_f
     C_mv = (Q_m*C_ma - N_tot)/Q_m
     return C_fv, C_mv
@@ -104,3 +104,29 @@ def oxygen_consumption(C_fetal, cardiac_cyle_time):
     """
     sol= sp.integrate.solve_ivp(consumption, [0, cardiac_cyle_time], [C_fetal,])
     return sol.t, sol.y
+
+def convert_po2_to_concentration(p_o2):
+    """
+    :param po2: partial pressure of oxygen in blood
+    :return: C_o2, the concentration of oxygen in the blood in ml/ml
+    """
+    # concentration of oxygen in plasma given by 3 * 10^-5 * po2 (in mmhg) gives concentration in ml/ml
+    C_o2_plasma = 3 * 10 ** -5 * p_o2
+    # log pO2 = k1 − k2(pH − 7.4) + k3log(SHb/(100 − SHb)), solve for S_hb
+    k1 = 1.445
+    k2 = 0.456
+    k3 = 0.371
+    # o2_capacity = amout of oxygen that can be carried by haemoglobin (1.34 ml/g) * haemoglobin in the blood (~0.125 g/ml)
+    Hb_cap = 1.34
+    C_Hb = 0.125
+
+    # Concentration of oxygen bound to haemoglobin ( C_Hb)
+    # = (S_hb * o2_capacity)/100
+    w = p_o2 ** (1 / k3) + np.e ** (-k1 / k3)
+    S_Hb = (100 * w) / (1 + w)  # Rearrangement of modified hills equation from Mabelle Lins thesis to solve for SH
+
+    O2_cap = Hb_cap * C_Hb
+
+    C_o2_Hb = S_Hb * O2_cap * (1 / 100)
+    C_o2 = C_o2_Hb + C_o2_plasma
+    return C_o2
