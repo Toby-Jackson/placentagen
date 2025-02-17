@@ -68,7 +68,6 @@ def exchange_maternal_fetal_oxygen_with_vessel_resistance(P_m, P_f, C_ma, C_fa, 
     F = lambda theta: 1 - np.e**(-1*theta)
 
     Damkohler_fetal = (D_t*L_tv*N_tv)/Q_f
-    # L = ((D_t*L_tv)/Damkohler_fetal)*F(Damkohler_fetal)
     Damkohler_maternal = ((D_t*L_tv*N_tv)/Q_m) * (F(Damkohler_fetal)/Damkohler_fetal)
 
     N_tot = (F(Damkohler_fetal)/Damkohler_fetal) * (F(Damkohler_maternal)/Damkohler_maternal) * D_t * L_tv * N_tv * (C_ma - C_fa)
